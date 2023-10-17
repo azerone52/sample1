@@ -5,9 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +31,23 @@ public class TodoDao {
             }
         }
 
-        return null;
+        return list;
     }
 
-    public void insert(Todo todo) {
+    public boolean insert(Todo todo) throws SQLException {
+        String sql = """
+                INSERT INTO todo (todo)
+                VALUE (?)
+                """;
+
+        Connection connection = dataSource.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);
+
+        try(connection; statement){
+            statement.setString(1, todo.getTodo());
+            int rows = statement.executeUpdate();
+
+            return rows==1;
+        }
     }
 }
